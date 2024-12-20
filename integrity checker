@@ -1,0 +1,57 @@
+import hashlib
+import os
+
+def calculate_file_hash(filepath, algorithm="sha256"):
+    """
+    Calculate the hash of a file using the specified hashing algorithm.
+    
+    Parameters:
+        filepath (str): Path to the file.
+        algorithm (str): Hashing algorithm to use (default is SHA-256).
+    
+    Returns:
+        str: Hexadecimal hash of the file.
+    """
+    try:
+        hash_function = hashlib.new(algorithm)
+        with open(filepath, "rb") as file:
+            while chunk := file.read(8192):  # Read in 8KB chunks
+                hash_function.update(chunk)
+        return hash_function.hexdigest()
+    except FileNotFoundError:
+        print(f"Error: File '{filepath}' not found.")
+        return None
+    except ValueError:
+        print(f"Error: Unsupported hashing algorithm '{algorithm}'.")
+        return None
+
+def verify_file_integrity(filepath, expected_hash, algorithm="sha256"):
+    """
+    Verify the integrity of a file by comparing its hash to the expected hash.
+    
+    Parameters:
+        filepath (str): Path to the file.
+        expected_hash (str): The expected hash value.
+        algorithm (str): Hashing algorithm to use (default is SHA-256).
+    
+    Returns:
+        bool: True if the file matches the expected hash, False otherwise.
+    """
+    calculated_hash = calculate_file_hash(filepath, algorithm)
+    if calculated_hash:
+        if calculated_hash == expected_hash:
+            print("Integrity check passed: The file is intact.")
+            return True
+        else:
+            print("Integrity check failed: The file has been tampered with.")
+            return False
+    return False
+
+if __name__ == "__main__":
+    print("File Integrity Checker\n")
+    filepath = input("Enter the file path: ").strip()
+    expected_hash = input("Enter the expected hash value: ").strip()
+    algorithm = input("Enter the hashing algorithm (default is 'sha256'): ").strip() or "sha256"
+
+    print("\nVerifying file integrity...\n")
+    verify_file_integrity(filepath, expected_hash, algorithm)
